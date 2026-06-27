@@ -1,5 +1,7 @@
 import { Router, type Request, type Response } from "express";
 import { env } from "../config/env";
+import { logger } from "../lib/logger";
+import { claimEvent } from "../idempotency/claimEvent";
 import {
   verifyNombaWebhookSignature,
   type NombaWebhookPayload,
@@ -7,7 +9,7 @@ import {
 
 export const webhooksRouter = Router();
 
-webhooksRouter.post(env.nombaWebhookPath, (req: Request, res: Response) => {
+webhooksRouter.post(env.nombaWebhookPath, async (req: Request, res: Response) => {
   const signature = req.header("nomba-signature");
   const timestamp = req.header("nomba-timestamp");
 
@@ -35,13 +37,27 @@ webhooksRouter.post(env.nombaWebhookPath, (req: Request, res: Response) => {
     return;
   }
 
-  // TODO: enqueue reconciliation job (idempotency + customer lookup)
-  console.info("[nomba webhook]", {
-    event_type: payload.event_type,
-    requestId: payload.requestId,
-    transactionId: payload.data?.transaction?.transactionId,
-    amount: payload.data?.transaction,
-  });
+  const transactionId = payload.data?.transaction?.transactionId;
+
+  if (!transactionId) {
+    logger.warn({ payload }, "Webhook payload missing transactionId, cannot dedupe");
+    res.status(400).json({ error: "Missing transactionId" });
+    return;
+  }
+
+  const isNew = await claimEvent(transactionId);
+
+  if (!isNew) {
+    res.status(200).json({ received: true, duplicate: true });
+    return;
+  }
+
+  // TODO: enqueue reconciliation job (customer lookup + ledger write)
+  // once #15 (BullMQ worker) and #3 (DB schema) are merged.
+  logger.info(
+    { event_type: payload.event_type, requestId: payload.requestId, transactionId },
+    "Nomba webhook received and claimed",
+  );
 
   res.status(200).json({ received: true });
 });
