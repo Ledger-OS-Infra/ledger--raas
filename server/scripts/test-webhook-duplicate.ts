@@ -10,15 +10,28 @@ const samplePayload = {
       walletId: "merchant_test_wallet",
     },
     transaction: {
-      transactionId: "txn_test_duplicate_check_001",
+      transactionId: "txn_test_" + Date.now(),
       type: "virtual_account_credit",
       time: "2026-06-27T20:00:00.000Z",
       responseCode: "00",
+      aliasAccountNumber: "9671300012",
+      aliasAccountName: "Ledger-Core Test/John Doe",
+      aliasAccountReference: "test_va_ref_001",
+      transactionAmount: 5000,
+    },
+    customer: {
+      senderName: "Jane Sender",
+      bankName: "Test Bank",
+      accountNumber: "0123456789",
     },
   },
 };
 
-function signPayload(payload: typeof samplePayload, timestamp: string, secret: string): string {
+function signPayload(
+  payload: typeof samplePayload,
+  timestamp: string,
+  secret: string,
+): string {
   const merchant = payload.data.merchant;
   const transaction = payload.data.transaction;
 
@@ -34,22 +47,32 @@ function signPayload(payload: typeof samplePayload, timestamp: string, secret: s
     timestamp,
   ].join(":");
 
-  return crypto.createHmac("sha256", secret).update(hashingPayload).digest("base64");
+  return crypto
+    .createHmac("sha256", secret)
+    .update(hashingPayload)
+    .digest("base64");
 }
 
 async function sendWebhook() {
   const timestamp = Date.now().toString();
-  const signature = signPayload(samplePayload, timestamp, env.nombaWebhookSecret);
+  const signature = signPayload(
+    samplePayload,
+    timestamp,
+    env.nombaWebhookSecret,
+  );
 
-  const res = await fetch(`http://localhost:${env.port}${env.nombaWebhookPath}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "nomba-signature": signature,
-      "nomba-timestamp": timestamp,
+  const res = await fetch(
+    `http://localhost:${env.port}${env.nombaWebhookPath}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "nomba-signature": signature,
+        "nomba-timestamp": timestamp,
+      },
+      body: JSON.stringify(samplePayload),
     },
-    body: JSON.stringify(samplePayload),
-  });
+  );
 
   const body = await res.json();
   console.log("Status:", res.status, "Body:", body);
