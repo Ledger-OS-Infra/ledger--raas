@@ -4,6 +4,7 @@ import { env } from "./config/env";
 import { webhooksRouter } from "./routes/webhooks";
 import { reportingRouter } from "./routes/reporting";
 import { obligationsRouter } from "./routes/obligations";
+import { customersRouter } from "./routes/customers";
 import { requestLogger } from "./middleware/requestLogger";
 import { errorHandler } from "./middleware/errorHandler";
 
@@ -22,6 +23,7 @@ app.get("/", (_req, res) => {
 });
 
 app.use(webhooksRouter);
+app.use("/customers", customersRouter);
 app.use("/reporting", reportingRouter);
 app.use(obligationsRouter);
 
