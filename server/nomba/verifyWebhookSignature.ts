@@ -14,6 +14,15 @@ export interface NombaWebhookPayload {
       type?: string;
       time?: string;
       responseCode?: string;
+      aliasAccountNumber?: string;
+      aliasAccountName?: string;
+      aliasAccountReference?: string;
+      transactionAmount?: number;
+    };
+    customer?: {
+      senderName?: string;
+      bankName?: string;
+      accountNumber?: string;
     };
   };
 }
@@ -57,8 +66,5 @@ export function verifyNombaWebhookSignature(
     return false;
   }
 
-  return crypto.timingSafeEqual(
-    Buffer.from(expected),
-    Buffer.from(signature),
-  );
+  return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(signature));
 }
