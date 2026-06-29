@@ -13,7 +13,9 @@
     "db:setup": "npm run migrate && npm run seed",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:nomba-sandbox": "ts-node --transpile-only scripts/test-nomba-sandbox.ts"
+    "test:nomba-sandbox": "ts-node --transpile-only scripts/test-nomba-sandbox.ts",
+    "test:claim-manual": "ts-node --transpile-only scripts/test-claim.ts",
+    "test:webhook-duplicate": "ts-node --transpile-only scripts/test-webhook-duplicate.ts"
   },
   "keywords": [],
   "author": "",
