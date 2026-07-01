@@ -5,9 +5,6 @@ import { webhooksRouter } from "./routes/webhooks";
 import { reportingRouter } from "./routes/reporting";
 import { obligationsRouter } from "./routes/obligations";
 import { customersRouter } from "./routes/customers";
-
-import { obligationsRouter } from "./routes/obligations";
-
 import { requestLogger } from "./middleware/requestLogger";
 import { errorHandler } from "./middleware/errorHandler";
 
