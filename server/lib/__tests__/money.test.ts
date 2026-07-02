@@ -17,15 +17,9 @@ describe("money", () => {
   });
 
   it("rejects negative naira and kobo", () => {
-    expect(() => ngnToKobo(-1)).toThrow("NGN amount must be greater than zero");
-    expect(() => koboToNgn(-100)).toThrow(
-      "Kobo amount must be greater than zero",
-    );
-    expect(() => assertKoboAmount(-100)).toThrow(
-      "amount must be greater than zero",
-    );
-    expect(() => assertKoboAmount(0)).toThrow(
-      "amount must be greater than zero",
-    );
+    expect(() => ngnToKobo(-1)).toThrow("NGN amount cannot be negative");
+    expect(() => koboToNgn(-100)).toThrow("Kobo amount cannot be negative");
+    expect(() => assertKoboAmount(-100)).toThrow("amount cannot be negative");
+    expect(() => assertKoboAmount(0)).toThrow("amount must be at least 1");
   });
 });
