@@ -33,9 +33,9 @@ export default function DashboardPage() {
           metrics: {
             totalOutstanding: mockCustomers.reduce((sum, c) => sum + c.outstanding, 0),
             overdueAmount: mockCustomers
-              .filter((c) => c.status === 'overdue')
+              .filter((c) => c.status === 'INACTIVE')
               .reduce((sum, c) => sum + c.outstanding, 0),
-            overdueObligationCount: mockCustomers.filter((c) => c.status === 'overdue').length,
+            overdueObligationCount: mockCustomers.filter((c) => c.status === 'INACTIVE').length,
             totalInflow: 0,
             totalWalletCredit: mockCustomers.reduce((sum, c) => sum + c.walletCredit, 0),
           },
@@ -50,9 +50,9 @@ export default function DashboardPage() {
   const dashboardMetrics = dashboardData?.metrics ?? {
     totalOutstanding: mockCustomers.reduce((sum, c) => sum + c.outstanding, 0),
     overdueAmount: mockCustomers
-      .filter((c) => c.status === 'overdue')
+      .filter((c) => c.status === 'INACTIVE')
       .reduce((sum, c) => sum + c.outstanding, 0),
-    overdueObligationCount: mockCustomers.filter((c) => c.status === 'overdue').length,
+    overdueObligationCount: mockCustomers.filter((c) => c.status === 'INACTIVE').length,
     totalInflow: 0,
     totalWalletCredit: mockCustomers.reduce((sum, c) => sum + c.walletCredit, 0),
   }
@@ -67,8 +67,8 @@ export default function DashboardPage() {
 
   const totalOutstanding = dashboardMetrics.totalOutstanding
   const totalOverdue = dashboardMetrics.overdueAmount
-  // The API doesn't return a total customer count; use mock length as a stand-in
-  const activeCustomers = mockCustomers.length
+  // The API doesn't return a total customer count; use active mock customers as a stand-in
+  const activeCustomers = mockCustomers.filter((c) => c.status === 'ACTIVE').length
   const unmatchedTransactions = mockTransactions.filter((t) => t.status === 'unmatched')
 
   // Aging buckets — computed via shared utility
@@ -164,7 +164,7 @@ export default function DashboardPage() {
                         >
                           <div className="flex-1">
                             <p className="font-medium text-sm">
-                              {customer?.name}
+                              {customer?.full_name ?? 'Unknown customer'}
                             </p>
                             <p className="text-xs text-muted-foreground mt-1">
                               {transaction.reasoning}

@@ -5,23 +5,53 @@ import { Avatar as AvatarPrimitive } from "radix-ui"
 
 import { cn } from "@/lib/utils"
 
+function getInitials(name?: string) {
+  return name
+    ?.split(' ')
+    .filter(Boolean)
+    .map((part) => part[0]?.toUpperCase())
+    .slice(0, 2)
+    .join('') ?? ''
+}
+
 function Avatar({
   className,
   size = "default",
+  name,
+  shape = "circle",
   ...props
 }: React.ComponentProps<typeof AvatarPrimitive.Root> & {
   size?: "default" | "sm" | "lg"
+  name?: string
+  shape?: "circle" | "square"
 }) {
+  const shapeClass =
+    shape === "square"
+      ? "rounded-lg after:rounded-lg"
+      : "rounded-full after:rounded-full"
+
   return (
     <AvatarPrimitive.Root
       data-slot="avatar"
       data-size={size}
       className={cn(
-        "group/avatar relative flex size-8 shrink-0 rounded-full select-none after:absolute after:inset-0 after:rounded-full after:border after:border-border after:mix-blend-darken data-[size=lg]:size-10 data-[size=sm]:size-6 dark:after:mix-blend-lighten",
+        "group/avatar relative flex size-8 shrink-0 select-none after:absolute after:inset-0 after:border after:border-border/70 after:mix-blend-darken data-[size=lg]:size-10 data-[size=sm]:size-6 dark:after:mix-blend-lighten",
+        shapeClass,
         className
       )}
       {...props}
-    />
+    >
+      {name ? (
+        <AvatarFallback
+          className={cn(
+            "bg-gold/90 text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-[#151513]",
+            shape === "square" ? "rounded-lg" : "rounded-full"
+          )}
+        >
+          {getInitials(name)}
+        </AvatarFallback>
+      ) : null}
+    </AvatarPrimitive.Root>
   )
 }
 
