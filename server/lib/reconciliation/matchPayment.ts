@@ -1,4 +1,5 @@
 import type { PaymentObligationRow } from "../obligations/format";
+
 export interface MatchResult {
   obligation: PaymentObligationRow;
   amountToApply: number;
@@ -26,12 +27,11 @@ function matchExact(
   obligations: PaymentObligationRow[],
 ): PaymentObligationRow | null {
   const matches = obligations.filter(
-    (o) => getOutstanding(o) === paymentAmount,
+    (obligation) => getOutstanding(obligation) === paymentAmount,
   );
 
   if (matches.length === 0) return null;
 
-  // Tiebreaker: oldest first (FIFO)
   return matches.sort(
     (a, b) =>
       new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
@@ -54,34 +54,30 @@ export function matchPayment(
   obligations: PaymentObligationRow[],
   referenceCode?: string | null,
 ): MatchResult | null {
-  // Only match against open obligations
   const open = obligations.filter(
-    (o) => o.status === "UNPAID" || o.status === "PARTIAL",
+    (obligation) =>
+      obligation.status === "UNPAID" || obligation.status === "PARTIAL",
   );
 
   if (open.length === 0) return null;
 
-  // Step 1: Exact amount match
   const exactMatch = matchExact(paymentAmount, open);
   if (exactMatch) {
     return buildResult(exactMatch, paymentAmount, "exact");
   }
 
-  // Step 2: Reference code match
-  // TODO: wire in once Abdullah confirms which field carries
-  // the reference code from the webhook payload
+
   if (referenceCode) {
-    const refMatch =
-      open.find(
-        (o) =>
-          o.reference_code !== null && referenceCode.includes(o.reference_code),
-      ) ?? null;
+    const refMatch = open.find(
+      (obligation) =>
+        obligation.reference_code !== null &&
+        referenceCode.includes(obligation.reference_code),
+    );
     if (refMatch) {
       return buildResult(refMatch, paymentAmount, "reference");
     }
   }
 
-  // Step 3: FIFO fallback
   const fifoMatch = matchFifo(open);
   if (fifoMatch) {
     return buildResult(fifoMatch, paymentAmount, "fifo");

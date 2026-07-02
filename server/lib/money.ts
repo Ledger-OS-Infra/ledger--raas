@@ -14,7 +14,7 @@ function assertWholeInteger(
   if (amount < minimum) {
     throw new Error(
       minimum === MINIMUM_AMOUNT
-        ? `${field} cannot be negative`
+        ? `${field} must be greater than zero`
         : `${field} must be at least ${minimum}`,
     );
   }
